@@ -79,4 +79,16 @@ async function checkAll() {
     const delta = currentStake - entry.lastStake;
     if (Math.abs(delta) >= 0.5) {
       const emoji = delta > 0 ? '📈' : '📉';
-      const msg = `${emoji} Stake ${delta > 0 ? 'increased' : 'decreased'}: ${delta.toFixed(2)} SOL\
+      const msg = `${emoji} Stake ${delta > 0 ? 'increased' : 'decreased'}: ${delta.toFixed(2)} SOL\n` +
+                  `🔹 Vote: ${entry.votePubkey}\n` +
+                  `🔢 Total: ${currentStake.toFixed(2)} SOL\n` +
+                  `⏰ Time: ${new Date().toUTCString()}`;
+      sendMessage(entry.chatId, msg);
+      entry.lastStake = currentStake;
+    }
+  }
+  saveDB();
+}
+
+setInterval(checkAll, 5 * 60 * 1000); // check every 5 minutes
+console.log('✅ Stake Notifier started');
