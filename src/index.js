@@ -70,6 +70,30 @@ bot.onText(/\/remove_vote (.+)/, (msg, match) => {
   sendMessage(chatId, `✅ Removed votePubkey ${votePubkey}.`);
 });
 
+bot.onText(/\/status|\/list/, (msg) => {
+  const chatId = msg.chat.id;
+  const tracked = db.filter(e => e.chatId === chatId);
+  if (tracked.length === 0) {
+    return sendMessage(chatId, 'ℹ️ You are not tracking any vote accounts yet. Use /add_vote <votePubkey> to start.');
+  }
+  const response = '📋 Your tracked vote accounts:\n' + tracked.map(e => `• ${e.votePubkey} (${e.lastStake.toFixed(2)} SOL)`).join('\n');
+  sendMessage(chatId, response);
+});
+
+bot.onText(/\/help/, (msg) => {
+  const chatId = msg.chat.id;
+  const helpText = `🤖 *Stake Change Notifier Bot*
+
+/start — Start the bot
+/add_vote <votePubkey> — Start tracking stake changes for a validator
+/remove_vote <votePubkey> — Stop tracking
+/status or /list — Show your tracked validators
+/help — Show this help message
+
+🔔 Notifications are sent if stake changes by ±0.5 SOL.`;
+  bot.sendMessage(chatId, helpText, { parse_mode: 'Markdown' });
+});
+
 async function checkAll() {
   loadDB();
   for (const entry of db) {
@@ -92,3 +116,4 @@ async function checkAll() {
 
 setInterval(checkAll, 5 * 60 * 1000); // check every 5 minutes
 console.log('✅ Stake Notifier started');
+
